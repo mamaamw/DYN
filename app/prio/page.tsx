@@ -135,7 +135,7 @@ export default function PrioPage() {
       if (!categoriesResponse.ok) return;
       
       const categoriesData = await categoriesResponse.json();
-      setUserCategories(categoriesData);
+      setUserCategories(categoriesData.categories || []);
     } catch (err) {
       console.error('Error fetching categories:', err);
     }

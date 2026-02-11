@@ -93,11 +93,6 @@ export async function PATCH(
 ) {
   try {
     const { id: idParam } = await params;
-    const id = parseInt(idParam);
-    
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
-    }
 
     const body = await request.json();
     const {
@@ -127,22 +122,44 @@ export async function PATCH(
       }
     }
 
-    // Récupérer l'ancien client pour comparer les changements
-    const oldClient = await prisma.newClient.findUnique({
-      where: { id },
-      include: { 
-        contactIdentifiers: true,
-        searches: {
-          include: {
-            search: true,
+    // Récupérer l'ancien client pour comparer les changements (accepter ID numérique ou slug)
+    const numericId = parseInt(idParam);
+    let oldClient;
+    
+    if (!isNaN(numericId)) {
+      // Si c'est un nombre, chercher par ID
+      oldClient = await prisma.newClient.findUnique({
+        where: { id: numericId },
+        include: { 
+          contactIdentifiers: true,
+          searches: {
+            include: {
+              search: true,
+            },
           },
         },
-      },
-    });
+      });
+    } else {
+      // Sinon, chercher par slug
+      oldClient = await prisma.newClient.findUnique({
+        where: { slug: idParam },
+        include: { 
+          contactIdentifiers: true,
+          searches: {
+            include: {
+              search: true,
+            },
+          },
+        },
+      });
+    }
 
     if (!oldClient) {
       return NextResponse.json({ error: 'Client non trouvé' }, { status: 404 });
     }
+    
+    // Utiliser l'ID réel du client trouvé
+    const id = oldClient.id;
 
     // Pour l'instant, on utilise userId optionnel
     // TODO: Récupérer l'utilisateur connecté depuis la session
@@ -438,11 +455,6 @@ export async function DELETE(
 ) {
   try {
     const { id: idParam } = await params;
-    const id = parseInt(idParam);
-    
-    if (isNaN(id)) {
-      return NextResponse.json({ error: 'ID invalide' }, { status: 400 });
-    }
 
     // Vérifier si c'est une suppression permanente (admin uniquement)
     const url = new URL(request.url);
@@ -452,15 +464,30 @@ export async function DELETE(
     // TODO: Récupérer l'utilisateur connecté depuis la session
     const userId = 1;
 
-    // Récupérer les données du client avant de le supprimer
-    const client = await prisma.newClient.findUnique({
-      where: { id },
-      include: { contactIdentifiers: true },
-    });
+    // Résoudre l'ID (slug ou numérique) et récupérer les données du client
+    const numericId = parseInt(idParam);
+    let client;
+    
+    if (!isNaN(numericId)) {
+      // Si c'est un nombre, chercher par ID
+      client = await prisma.newClient.findUnique({
+        where: { id: numericId },
+        include: { contactIdentifiers: true },
+      });
+    } else {
+      // Sinon, chercher par slug
+      client = await prisma.newClient.findUnique({
+        where: { slug: idParam },
+        include: { contactIdentifiers: true },
+      });
+    }
 
     if (!client) {
       return NextResponse.json({ error: 'Client non trouvé' }, { status: 404 });
     }
+    
+    // Utiliser l'ID réel du client trouvé
+    const id = client.id;
 
     if (permanent) {
       // Suppression permanente (hard delete) - admin uniquement

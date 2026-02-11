@@ -97,8 +97,8 @@ export default function EditClientPage() {
         if (userId) {
           const categoriesResponse = await fetch(`/api/users/${userId}/categories`);
           if (categoriesResponse.ok) {
-            const categories = await categoriesResponse.json();
-            setUserCategories(Array.isArray(categories) ? categories : []);
+            const data = await categoriesResponse.json();
+            setUserCategories(Array.isArray(data.categories) ? data.categories : []);
           }
         }
       } catch (error) {
