@@ -229,9 +229,9 @@ export default function TodoKanbanPage() {
   };
 
   // Obtenir les valeurs uniques pour les filtres
-  const uniqueClients = Array.from(new Set(todos.map(t => t.codename).filter(Boolean))).sort();
-  const uniqueTools = Array.from(new Set(todos.map(t => t.tool).filter(Boolean))).sort();
-  const uniqueActionTypes = Array.from(new Set(todos.map(t => t.actionType).filter(Boolean))).sort();
+  const uniqueClients = Array.from(new Set(todos.map(t => t.codename).filter((c): c is string => Boolean(c)))).sort();
+  const uniqueTools = Array.from(new Set(todos.map(t => t.tool).filter((t): t is string => Boolean(t)))).sort();
+  const uniqueActionTypes = Array.from(new Set(todos.map(t => t.actionType).filter((a): a is string => Boolean(a)))).sort();
 
   const resetFilters = () => {
     setFilters({

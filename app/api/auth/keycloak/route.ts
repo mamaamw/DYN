@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { signToken } from '@/lib/auth';
+import { generateToken } from '@/lib/auth';
 import bcrypt from 'bcryptjs';
 
 interface KeycloakTokenPayload {
@@ -60,8 +60,11 @@ export async function POST(request: NextRequest) {
           username: `keycloak_${username}_${Date.now()}`,
           email: payload.email,
           password: randomPassword, // Mot de passe aléatoire (non utilisé pour Keycloak SSO)
+          firstName: payload.given_name || username,
+          lastName: payload.family_name || '',
           role: isAdmin ? 'ADMIN' : 'USER',
           keycloakId: payload.sub,
+          updatedAt: new Date(),
         }
       });
     } else {
@@ -79,7 +82,11 @@ export async function POST(request: NextRequest) {
     }
 
     // Générer un JWT comme pour l'authentification normale
-    const token = signToken({ userId: user.id });
+    const token = generateToken({ 
+      userId: user.id, 
+      email: user.email, 
+      role: user.role 
+    });
 
     // Créer la réponse avec le cookie
     const response = NextResponse.json({
