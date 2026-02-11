@@ -1,0 +1,46 @@
+{
+  "categories": [
+    {
+      "name": "ACTION",
+      "label": "Film d'action",
+      "description": "Films d'action, aventure et cascades",
+      "color": "red",
+      "icon": "🎬"
+    },
+    {
+      "name": "HORREUR",
+      "label": "Film d'horreur",
+      "description": "Films d'horreur et thriller psychologique",
+      "color": "purple",
+      "icon": "👻"
+    },
+    {
+      "name": "COMEDIE",
+      "label": "Comédie",
+      "description": "Films comiques et humoristiques",
+      "color": "yellow",
+      "icon": "😂"
+    },
+    {
+      "name": "DRAME",
+      "label": "Drame",
+      "description": "Films dramatiques et émotionnels",
+      "color": "blue",
+      "icon": "🎭"
+    },
+    {
+      "name": "SF",
+      "label": "Science-Fiction",
+      "description": "Films de science-fiction et futuristes",
+      "color": "green",
+      "icon": "🚀"
+    },
+    {
+      "name": "ROMANTIQUE",
+      "label": "Romantique",
+      "description": "Film romantique",
+      "color": "pink",
+      "icon": "❤️"
+    }
+  ]
+}

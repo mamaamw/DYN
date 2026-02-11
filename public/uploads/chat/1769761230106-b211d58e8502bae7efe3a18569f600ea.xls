@@ -1,0 +1,37 @@
+
+<?xml version="1.0"?>
+<?mso-application progid="Excel.Sheet"?>
+<Workbook xmlns="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:o="urn:schemas-microsoft-com:office:office"
+ xmlns:x="urn:schemas-microsoft-com:office:excel"
+ xmlns:ss="urn:schemas-microsoft-com:office:spreadsheet"
+ xmlns:html="http://www.w3.org/TR/REC-html40">
+ <Styles>
+  <Style ss:ID="header">
+   <Font ss:Bold="1" ss:Color="#FFFFFF"/>
+   <Interior ss:Color="#4F46E5" ss:Pattern="Solid"/>
+   <Alignment ss:Horizontal="Center" ss:Vertical="Center"/>
+  </Style>
+ </Styles>
+ <Worksheet ss:Name="Données">
+  <Table>
+   <Row ss:StyleID="header">
+    <Cell><Data ss:Type="String">id</Data></Cell><Cell><Data ss:Type="String">taskName</Data></Cell><Cell><Data ss:Type="String">demandeur</Data></Cell><Cell><Data ss:Type="String">generalReference</Data></Cell><Cell><Data ss:Type="String">detailedReference</Data></Cell><Cell><Data ss:Type="String">codename</Data></Cell><Cell><Data ss:Type="String">accountType</Data></Cell><Cell><Data ss:Type="String">accountNumber</Data></Cell><Cell><Data ss:Type="String">tool</Data></Cell><Cell><Data ss:Type="String">actionType</Data></Cell><Cell><Data ss:Type="String">executionDate</Data></Cell><Cell><Data ss:Type="String">result</Data></Cell><Cell><Data ss:Type="String">log</Data></Cell><Cell><Data ss:Type="String">status</Data></Cell><Cell><Data ss:Type="String">createdAt</Data></Cell><Cell><Data ss:Type="String">updatedAt</Data></Cell>
+   </Row>
+   
+   <Row>
+    <Cell><Data ss:Type="Number">6</Data></Cell><Cell><Data ss:Type="String">Collecte données</Data></Cell><Cell><Data ss:Type="String">Drame</Data></Cell><Cell><Data ss:Type="String">Article</Data></Cell><Cell><Data ss:Type="String">dbgqrfdgbrs</Data></Cell><Cell><Data ss:Type="String">TEST_2</Data></Cell><Cell><Data ss:Type="String">Telegram</Data></Cell><Cell><Data ss:Type="String">rghsrhzsh</Data></Cell><Cell><Data ss:Type="DateTime">Outil 2</Data></Cell><Cell><Data ss:Type="String">faire</Data></Cell><Cell><Data ss:Type="String"></Data></Cell><Cell><Data ss:Type="String"></Data></Cell><Cell><Data ss:Type="String">Test</Data></Cell><Cell><Data ss:Type="String">todo</Data></Cell><Cell><Data ss:Type="DateTime">2026-01-27T15:54:38.345Z</Data></Cell><Cell><Data ss:Type="DateTime">2026-01-27T16:28:08.192Z</Data></Cell>
+   </Row>
+   
+   <Row>
+    <Cell><Data ss:Type="Number">5</Data></Cell><Cell><Data ss:Type="String">Collecte données</Data></Cell><Cell><Data ss:Type="String">Drame</Data></Cell><Cell><Data ss:Type="String">Article</Data></Cell><Cell><Data ss:Type="String">dbgqrfdgbrs</Data></Cell><Cell><Data ss:Type="String">TEST_2</Data></Cell><Cell><Data ss:Type="String">Telegram</Data></Cell><Cell><Data ss:Type="String">rghsrhzsh</Data></Cell><Cell><Data ss:Type="DateTime">Outil 2</Data></Cell><Cell><Data ss:Type="String">tester</Data></Cell><Cell><Data ss:Type="String"></Data></Cell><Cell><Data ss:Type="String"></Data></Cell><Cell><Data ss:Type="String"></Data></Cell><Cell><Data ss:Type="String">todo</Data></Cell><Cell><Data ss:Type="DateTime">2026-01-27T15:54:38.329Z</Data></Cell><Cell><Data ss:Type="DateTime">2026-01-27T16:13:11.578Z</Data></Cell>
+   </Row>
+   
+   <Row>
+    <Cell><Data ss:Type="Number">4</Data></Cell><Cell><Data ss:Type="String">Collecte données</Data></Cell><Cell><Data ss:Type="String">Drame</Data></Cell><Cell><Data ss:Type="String">Article</Data></Cell><Cell><Data ss:Type="String">dbgqrfdgbrs</Data></Cell><Cell><Data ss:Type="String">TEST_2</Data></Cell><Cell><Data ss:Type="String">Telegram</Data></Cell><Cell><Data ss:Type="String">rghsrhzsh</Data></Cell><Cell><Data ss:Type="DateTime">Outil 1</Data></Cell><Cell><Data ss:Type="String">faire</Data></Cell><Cell><Data ss:Type="String"></Data></Cell><Cell><Data ss:Type="String"></Data></Cell><Cell><Data ss:Type="String"></Data></Cell><Cell><Data ss:Type="String">todo</Data></Cell><Cell><Data ss:Type="DateTime">2026-01-27T15:54:38.310Z</Data></Cell><Cell><Data ss:Type="DateTime">2026-01-27T16:13:11.581Z</Data></Cell>
+   </Row>
+   
+  </Table>
+ </Worksheet>
+</Workbook>
+  

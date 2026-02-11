@@ -1,0 +1,9 @@
+{
+  "name": "dyn",
+  "scripts": {
+    "seed": "node scripts/diagnostic-user-table.js"
+  },
+  "prisma": {
+    "seed": "node scripts/diagnostic-user-table.js"
+  }
+}

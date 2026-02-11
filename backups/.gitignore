@@ -1,0 +1,3 @@
+# Sauvegardes de base de données
+dyn_backup_*.sql
+dyn_backup_*.sql.zip

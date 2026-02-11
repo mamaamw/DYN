@@ -1,0 +1,565 @@
+@import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
+
+/* Chat optimizations */
+.chat-container {
+  height: 100%;
+}
+
+/* Modern scrollbar */
+.chat-messages::-webkit-scrollbar,
+.chat-conversations::-webkit-scrollbar,
+.overflow-y-auto::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-messages::-webkit-scrollbar-track,
+.chat-conversations::-webkit-scrollbar-track,
+.overflow-y-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages::-webkit-scrollbar-thumb,
+.chat-conversations::-webkit-scrollbar-thumb,
+.overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(156, 163, 175, 0.5);
+  border-radius: 3px;
+}
+
+.chat-messages::-webkit-scrollbar-thumb:hover,
+.chat-conversations::-webkit-scrollbar-thumb:hover,
+.overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(156, 163, 175, 0.7);
+}
+
+.dark .chat-messages::-webkit-scrollbar-thumb,
+.dark .chat-conversations::-webkit-scrollbar-thumb,
+.dark .overflow-y-auto::-webkit-scrollbar-thumb {
+  background: rgba(71, 85, 105, 0.5);
+}
+
+.dark .chat-messages::-webkit-scrollbar-thumb:hover,
+.dark .chat-conversations::-webkit-scrollbar-thumb:hover,
+.dark .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+  background: rgba(71, 85, 105, 0.7);
+}
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+  --muted: #f1f5f9;
+  --muted-foreground: #64748b;
+  --card: #ffffff;
+  --card-foreground: #171717;
+  --border: #e2e8f0;
+  --input: #e2e8f0;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
+  --secondary: #f1f5f9;
+  --secondary-foreground: #0f172a;
+  --accent: #f1f5f9;
+  --accent-foreground: #0f172a;
+  --ring: #2563eb;
+}
+
+.dark {
+  --background: #0a0e1a;
+  --foreground: #f8fafc;
+  --muted: #1e293b;
+  --muted-foreground: #94a3b8;
+  --card: #0f172a;
+  --card-foreground: #f8fafc;
+  --border: #334155;
+  --input: #334155;
+  --primary: #3b82f6;
+  --primary-foreground: #ffffff;
+  --secondary: #1e293b;
+  --secondary-foreground: #f8fafc;
+  --accent: #1e293b;
+  --accent-foreground: #f8fafc;
+  --ring: #3b82f6;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+/* Animation pour message surligné */
+@keyframes highlight-pulse {
+  0%, 100% {
+    background-color: rgba(59, 130, 246, 0.3);
+  }
+  50% {
+    background-color: rgba(59, 130, 246, 0.5);
+  }
+}
+
+.highlight-message {
+  animation: highlight-pulse 1s ease-in-out 2;
+  border-radius: 0.5rem;
+}
+
+/* ============================================ */
+/* DARK MODE DURALUX STYLE                      */
+/* ============================================ */
+
+/* Couleurs principales Duralux */
+.dark {
+  background-color: #121a2d !important;
+}
+
+/* Textes principaux - blanc SAUF dans les badges colorés */
+.dark h1:not([class*="bg-"]),
+.dark h2:not([class*="bg-"]),
+.dark h3:not([class*="bg-"]),
+.dark h4:not([class*="bg-"]),
+.dark h5:not([class*="bg-"]),
+.dark h6:not([class*="bg-"]),
+.dark p:not([class*="bg-"]),
+.dark label:not([class*="bg-"]),
+.dark a:not([class*="bg-"]),
+.dark input,
+.dark textarea,
+.dark select {
+  color: #fff !important;
+}
+
+/* Préserver les textes dans les badges et éléments colorés */
+.dark [class*="bg-orange-"] span,
+.dark [class*="bg-orange-"] div,
+.dark [class*="bg-orange-"] button,
+.dark [class*="bg-blue-"] span,
+.dark [class*="bg-blue-"] div,
+.dark [class*="bg-blue-"] button,
+.dark [class*="bg-green-"] span,
+.dark [class*="bg-green-"] div,
+.dark [class*="bg-green-"] button,
+.dark [class*="bg-red-"] span,
+.dark [class*="bg-red-"] div,
+.dark [class*="bg-red-"] button,
+.dark [class*="bg-pink-"] span,
+.dark [class*="bg-pink-"] div,
+.dark [class*="bg-pink-"] button,
+.dark [class*="bg-purple-"] span,
+.dark [class*="bg-purple-"] div,
+.dark [class*="bg-purple-"] button,
+.dark [class*="bg-yellow-"] span,
+.dark [class*="bg-yellow-"] div,
+.dark [class*="bg-yellow-"] button,
+.dark [class*="bg-cyan-"] span,
+.dark [class*="bg-cyan-"] div,
+.dark [class*="bg-cyan-"] button,
+.dark [class*="bg-indigo-"] span,
+.dark [class*="bg-indigo-"] div,
+.dark [class*="bg-indigo-"] button {
+  color: inherit !important;
+}
+
+/* Badges de rôles - préserver complètement */
+.dark [class*="rounded"][class*="bg-orange"],
+.dark [class*="rounded"][class*="bg-blue"],
+.dark [class*="rounded"][class*="bg-green"],
+.dark [class*="rounded"][class*="bg-red"],
+.dark [class*="rounded"][class*="bg-purple"],
+.dark [class*="rounded"][class*="bg-pink"],
+.dark [class*="rounded"][class*="bg-yellow"] {
+  /* Garder le style original */
+}
+
+.dark [class*="rounded"][class*="bg-orange"] *,
+.dark [class*="rounded"][class*="bg-blue"] *,
+.dark [class*="rounded"][class*="bg-green"] *,
+.dark [class*="rounded"][class*="bg-red"] *,
+.dark [class*="rounded"][class*="bg-purple"] *,
+.dark [class*="rounded"][class*="bg-pink"] *,
+.dark [class*="rounded"][class*="bg-yellow"] * {
+  color: inherit !important;
+}
+
+/* Dropdowns et select - préserver les couleurs */
+.dark select {
+  color: inherit !important;
+  background-color: inherit !important;
+}
+
+.dark select option {
+  color: inherit !important;
+  background-color: inherit !important;
+}
+
+.dark select[class*="bg-orange"],
+.dark select[class*="bg-blue"],
+.dark select[class*="bg-green"],
+.dark select[class*="bg-red"],
+.dark select[class*="bg-purple"],
+.dark select[class*="bg-pink"],
+.dark select[class*="bg-yellow"] {
+  color: inherit !important;
+}
+
+/* Textes secondaires */
+.dark .text-muted,
+.dark .text-slate-500,
+.dark .text-slate-400,
+.dark .text-gray-500,
+.dark .text-gray-400 {
+  color: #b1b4c0 !important;
+}
+
+/* Fonds blancs → noir foncé Duralux */
+.dark .bg-white:not([class*="bg-orange"]):not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-pink"]):not([class*="bg-yellow"]),
+.dark *[class*="bg-white"]:not([class*="bg-orange"]):not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-pink"]):not([class*="bg-yellow"]) {
+  background-color: #0f172a !important;
+}
+
+/* Fonds de cartes → gris-bleu foncé */
+.dark .rounded-lg:not([class*="bg-orange"]):not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-pink"]):not([class*="bg-yellow"]),
+.dark .rounded-xl:not([class*="bg-orange"]):not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-pink"]):not([class*="bg-yellow"]),
+.dark *[class*="shadow"]:not([class*="bg-orange"]):not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-pink"]):not([class*="bg-yellow"]) {
+  background-color: #0f172a !important;
+}
+
+/* Fonds secondaires */
+.dark .bg-slate-50:not([class*="bg-orange"]):not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-pink"]):not([class*="bg-yellow"]),
+.dark .bg-slate-100:not([class*="bg-orange"]):not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-pink"]):not([class*="bg-yellow"]),
+.dark .bg-gray-50:not([class*="bg-orange"]):not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-pink"]):not([class*="bg-yellow"]),
+.dark .bg-gray-100:not([class*="bg-orange"]):not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-pink"]):not([class*="bg-yellow"]),
+.dark *[class*="bg-slate-"]:not([class*="bg-orange"]):not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-pink"]):not([class*="bg-yellow"]):not([class*="bg-cyan"]),
+.dark *[class*="bg-gray-"]:not([class*="bg-orange"]):not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-pink"]):not([class*="bg-yellow"]):not([class*="bg-cyan"]) {
+  background-color: #121a2d !important;
+}
+
+/* Bordures Duralux */
+.dark *,
+.dark .border,
+.dark .border-slate-200,
+.dark .border-slate-100,
+.dark .border-gray-200,
+.dark .border-gray-100,
+.dark *[class*="border-slate-"],
+.dark *[class*="border-gray-"] {
+  border-color: #1b2436 !important;
+}
+
+/* Tables */
+.dark table {
+  color: #fff !important;
+  background-color: #0f172a !important;
+}
+
+.dark thead tr {
+  background-color: #121a2d !important;
+}
+
+.dark th,
+.dark td {
+  color: #fff !important;
+  border-color: #1b2436 !important;
+}
+
+.dark tbody tr:hover {
+  background-color: #1c2438 !important;
+}
+
+/* Inputs, Selects, Textareas */
+.dark input:not([type="checkbox"]):not([type="radio"]):not([class*="bg-orange"]):not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-pink"]):not([class*="bg-yellow"]),
+.dark textarea:not([class*="bg-orange"]):not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-pink"]):not([class*="bg-yellow"]),
+.dark select:not([class*="bg-orange"]):not([class*="bg-blue"]):not([class*="bg-green"]):not([class*="bg-red"]):not([class*="bg-purple"]):not([class*="bg-pink"]):not([class*="bg-yellow"]) {
+  background-color: transparent !important;
+  color: #fff !important;
+  border-color: #1b2436 !important;
+}
+
+/* Select colorés - préserver les couleurs */
+.dark select[class*="bg-orange"],
+.dark select[class*="bg-blue"],
+.dark select[class*="bg-green"],
+.dark select[class*="bg-red"],
+.dark select[class*="bg-purple"],
+.dark select[class*="bg-pink"],
+.dark select[class*="bg-yellow"] {
+  color: inherit !important;
+  background-color: inherit !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: #50566e !important;
+}
+
+.dark input:focus,
+.dark textarea:focus,
+.dark select:focus {
+  border-color: #3454d1 !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Buttons états hover/active */
+.dark button:hover:not([class*="bg-red-"]):not([class*="bg-green-"]):not([class*="bg-blue-"]):not([class*="bg-orange-"]):not([class*="bg-purple-"]):not([class*="bg-yellow-"]) {
+  background-color: #1c2438 !important;
+}
+
+/* Dropdown items */
+.dark [role="menuitem"]:hover,
+.dark .dropdown-item:hover {
+  background-color: #1c2438 !important;
+  color: #3454d1 !important;
+}
+
+/* Modals et offcanvas */
+.dark .modal-content,
+.dark .offcanvas {
+  background-color: #0f172a !important;
+  border-color: #1b2436 !important;
+}
+
+.dark .modal-header,
+.dark .modal-footer {
+  border-color: #1b2436 !important;
+}
+
+/* Scrollbar dark */
+.dark ::-webkit-scrollbar-track {
+  background-color: #121a2d !important;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background-color: #19253f !important;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background-color: #1c2438 !important;
+}
+
+/* ============================================ */
+/* PRÉSERVER LES COULEURS EXACTES MODE CLAIR   */
+/* ============================================ */
+
+/* IMPORTANT: Les badges, avatars et boutons gardent leurs couleurs d'origine */
+
+/* Bleu - utiliser les couleurs Tailwind d'origine */
+.dark .bg-blue-600,
+.dark .bg-blue-500 {
+  background-color: #2563eb !important;
+}
+
+.dark .bg-blue-100 {
+  background-color: #dbeafe !important;
+}
+
+.dark .text-blue-600,
+.dark .text-blue-500 {
+  color: #2563eb !important;
+}
+
+.dark .text-blue-900 {
+  color: #1e3a8a !important;
+}
+
+/* Vert - couleurs Tailwind d'origine */
+.dark .bg-green-600,
+.dark .bg-green-500 {
+  background-color: #16a34a !important;
+}
+
+.dark .bg-green-100 {
+  background-color: #dcfce7 !important;
+}
+
+.dark .text-green-600,
+.dark .text-green-500 {
+  color: #16a34a !important;
+}
+
+.dark .text-green-900 {
+  color: #14532d !important;
+}
+
+/* Rouge - couleurs Tailwind d'origine */
+.dark .bg-red-600,
+.dark .bg-red-500 {
+  background-color: #dc2626 !important;
+}
+
+.dark .bg-red-100 {
+  background-color: #fee2e2 !important;
+}
+
+.dark .text-red-600,
+.dark .text-red-500 {
+  color: #dc2626 !important;
+}
+
+.dark .text-red-900 {
+  color: #7f1d1d !important;
+}
+
+/* Rose/Pink - couleurs Tailwind d'origine */
+.dark .bg-pink-600,
+.dark .bg-pink-500 {
+  background-color: #db2777 !important;
+}
+
+.dark .bg-pink-100 {
+  background-color: #fce7f3 !important;
+}
+
+.dark .text-pink-600,
+.dark .text-pink-500 {
+  color: #db2777 !important;
+}
+
+.dark .text-pink-900 {
+  color: #831843 !important;
+}
+
+/* Orange - couleurs Tailwind d'origine */
+.dark .bg-orange-600,
+.dark .bg-orange-500 {
+  background-color: #ea580c !important;
+}
+
+.dark .bg-orange-100 {
+  background-color: #ffedd5 !important;
+}
+
+.dark .text-orange-600,
+.dark .text-orange-500 {
+  color: #ea580c !important;
+}
+
+.dark .text-orange-900 {
+  color: #7c2d12 !important;
+}
+
+/* Jaune - couleurs Tailwind d'origine */
+.dark .bg-yellow-600,
+.dark .bg-yellow-500 {
+  background-color: #ca8a04 !important;
+}
+
+.dark .bg-yellow-100 {
+  background-color: #fef9c3 !important;
+}
+
+.dark .text-yellow-600,
+.dark .text-yellow-500 {
+  color: #ca8a04 !important;
+}
+
+.dark .text-yellow-900 {
+  color: #713f12 !important;
+}
+
+/* Purple/Violet - couleurs Tailwind d'origine */
+.dark .bg-purple-600,
+.dark .bg-purple-500 {
+  background-color: #9333ea !important;
+}
+
+.dark .bg-purple-100 {
+  background-color: #f3e8ff !important;
+}
+
+.dark .text-purple-600,
+.dark .text-purple-500 {
+  color: #9333ea !important;
+}
+
+.dark .text-purple-900 {
+  color: #581c87 !important;
+}
+
+/* Indigo - couleurs Tailwind d'origine */
+.dark .bg-indigo-600,
+.dark .bg-indigo-500 {
+  background-color: #4f46e5 !important;
+}
+
+.dark .bg-indigo-100 {
+  background-color: #e0e7ff !important;
+}
+
+.dark .text-indigo-600,
+.dark .text-indigo-500 {
+  color: #4f46e5 !important;
+}
+
+.dark .text-indigo-900 {
+  color: #312e81 !important;
+}
+
+/* Cyan/Teal - couleurs Tailwind d'origine */
+.dark .bg-cyan-600,
+.dark .bg-cyan-500 {
+  background-color: #0891b2 !important;
+}
+
+.dark .bg-cyan-100 {
+  background-color: #cffafe !important;
+}
+
+.dark .text-cyan-600,
+.dark .text-cyan-500 {
+  color: #0891b2 !important;
+}
+
+.dark .text-cyan-900 {
+  color: #164e63 !important;
+}
+
+/* Avatars - garder les couleurs vives */
+.dark .bg-blue-600.rounded-full,
+.dark .bg-green-600.rounded-full,
+.dark .bg-orange-600.rounded-full,
+.dark .bg-red-600.rounded-full,
+.dark .rounded-full[class*="bg-blue"],
+.dark .rounded-full[class*="bg-green"],
+.dark .rounded-full[class*="bg-orange"],
+.dark .rounded-full[class*="bg-red"] {
+  /* Garder les couleurs d'origine sans modification */
+}
+
+/* ============================================ */
+/* ÉTATS INTERACTIFS                            */
+/* ============================================ */
+
+.dark .hover\:bg-gray-100:hover,
+.dark .hover\:bg-slate-100:hover {
+  background-color: #1c2438 !important;
+}
+
+.dark .hover\:text-gray-900:hover {
+  color: #fff !important;
+}
+
+.dark .focus\:ring-blue-500:focus {
+  --tw-ring-color: #3454d1 !important;
+}
+
+@keyframes slide-in {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.animate-slide-in {
+  animation: slide-in 0.3s ease-out;
+}

@@ -1,0 +1,53 @@
+{
+  "roles": [
+    {
+      "name": "ADMIN",
+      "label": "Administrateur",
+      "description": "Accès complet, gestion des utilisateurs",
+      "color": "red",
+      "isSystem": true
+    },
+    {
+      "name": "MANAGER",
+      "label": "Manager",
+      "description": "Gestion des données, rapports avancés",
+      "color": "purple",
+      "isSystem": false
+    },
+    {
+      "name": "SHARK",
+      "label": "Shark",
+      "description": "Gestion des données, rapports avancés",
+      "color": "green",
+      "isSystem": false
+    },
+    {
+      "name": "GESTIONAIRE",
+      "label": "Gestionnaire",
+      "description": "Gestion des données, rapports avancés",
+      "color": "orange",
+      "isSystem": false
+    },
+    {
+      "name": "JELLY",
+      "label": "Jelly",
+      "description": "Accès standard, création et modification",
+      "color": "yellow",
+      "isSystem": false
+    },
+    {
+      "name": "USER",
+      "label": "Utilisateur",
+      "description": "Accès standard, création et modification",
+      "color": "blue",
+      "isSystem": false
+    },
+    {
+      "name": "VIEWER",
+      "label": "Lecteur",
+      "description": "Lecture seule, pas de modification",
+      "color": "slate",
+      "isSystem": false
+    }
+  ]
+}

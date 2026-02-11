@@ -1,0 +1,509 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Client {
+  id        Int      @id @default(autoincrement())
+  firstName String
+  lastName  String
+  email     String   @unique
+  phone1    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId    Int
+  User      User     @relation(fields: [userId], references: [id])
+}
+
+model NewClient {
+  id                 Int                 @id @default(autoincrement())
+  slug               String?             @unique
+  nickname           String?
+  surname            String?
+  firstName          String?
+  description        String?
+  requestor          String?
+  priority           String              @default("Moyenne")
+  externalHelp       Boolean             @default(false)
+  deletedAt          DateTime?
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
+  userId             Int?
+  history            ClientHistory[]
+  contactIdentifiers ContactIdentifier[]
+  user               User?               @relation("UserNewClients", fields: [userId], references: [id])
+  searches           SearchClient[]
+  categories         NewClientCategory[]
+}
+
+model ContactIdentifier {
+  id            Int       @id @default(autoincrement())
+  accountNumber String
+  accountType   String
+  info          String?
+  tasks         String?
+  position      Int?
+  newClientId   Int
+  createdAt     DateTime  @default(now())
+  newClient     NewClient @relation(fields: [newClientId], references: [id], onDelete: Cascade)
+
+  @@unique([accountNumber, accountType])
+}
+
+model ClientHistory {
+  id          Int       @id @default(autoincrement())
+  newClientId Int
+  userId      Int?
+  action      String
+  changes     String?
+  fieldName   String?
+  oldValue    String?
+  newValue    String?
+  createdAt   DateTime  @default(now())
+  newClient   NewClient @relation(fields: [newClientId], references: [id], onDelete: Cascade)
+  user        User?     @relation(fields: [userId], references: [id])
+}
+
+model Search {
+  id                Int            @id @default(autoincrement())
+  generalReference  String?
+  detailedReference String?
+  startDate         DateTime?
+  endDate           DateTime?
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  clients           SearchClient[]
+
+  @@unique([generalReference, detailedReference])
+}
+
+model SearchClient {
+  id          Int       @id @default(autoincrement())
+  searchId    Int
+  newClientId Int
+  createdAt   DateTime  @default(now())
+  search      Search    @relation(fields: [searchId], references: [id], onDelete: Cascade)
+  newClient   NewClient @relation(fields: [newClientId], references: [id], onDelete: Cascade)
+
+  @@unique([searchId, newClientId])
+}
+
+model User {
+  id                   Int             @id @default(autoincrement())
+  email                String          @unique
+  password             String
+  firstName            String
+  lastName             String
+  phone                String?
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime
+  emailVerified        Boolean         @default(false)
+  isActive             Boolean         @default(true)
+  lastLogin            DateTime?
+  lastSeen             DateTime?
+  resetPasswordExpires DateTime?
+  resetPasswordToken   String?
+  role                 String          @default("USER")
+  username             String          @unique
+  deletedAt            DateTime?
+  assets               Asset[]         @relation("AssetOwner")
+  Client               Client[]
+  clientHistory        ClientHistory[]
+  emails               Email[]         @relation("UserEmails")
+  invoices             Invoice[]       @relation("InvoiceOwner")
+  licenses             License[]       @relation("LicenseOwner")
+  newClients           NewClient[]     @relation("UserNewClients")
+  projects             Project[]       @relation("ProjectOwner")
+  files                StorageFile[]   @relation("UserFiles")
+  categories           UserCategory[]
+  sentMessages         Message[]       @relation("MessageSender")
+  savedFilters         SavedFilter[]   @relation("UserSavedFilters")
+}
+
+model Category {
+  id          Int            @id @default(autoincrement())
+  name        String         @unique
+  label       String
+  description String?
+  color       String         @default("blue")
+  icon        String?
+  createdAt   DateTime          @default(now())
+  roles       RoleCategory[]
+  users       UserCategory[]
+  clients     NewClientCategory[]
+}
+
+model RoleCategory {
+  id         Int      @id @default(autoincrement())
+  roleName   String
+  categoryId Int
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([roleName, categoryId])
+  @@index([roleName])
+}
+
+model UserCategory {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  categoryId Int
+  assignedAt DateTime @default(now())
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, categoryId])
+}
+
+model NewClientCategory {
+  id         Int       @id @default(autoincrement())
+  newClientId Int
+  categoryId Int
+  assignedAt DateTime @default(now())
+  category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  newClient  NewClient @relation(fields: [newClientId], references: [id], onDelete: Cascade)
+
+  @@unique([newClientId, categoryId])
+}
+
+model AccountTypeTask {
+  id          Int      @id @default(autoincrement())
+  accountType String
+  taskName    String
+  createdAt   DateTime @default(now())
+
+  @@unique([accountType, taskName])
+  @@index([accountType])
+}
+
+model SystemLog {
+  id          Int      @id @default(autoincrement())
+  userId      Int?
+  action      String
+  entity      String
+  entityId    Int?
+  description String
+  ipAddress   String?
+  userAgent   String?
+  metadata    String?
+  level       String   @default("INFO")
+  createdAt   DateTime @default(now())
+}
+
+model Conversation {
+  id             Int                       @id @default(autoincrement())
+  name           String?
+  isGroup        Boolean                   @default(false)
+  autoDeleteDays Int?
+  createdAt      DateTime                  @default(now())
+  updatedAt      DateTime                  @updatedAt
+  participants   ConversationParticipant[]
+  messages       Message[]
+}
+
+model ConversationParticipant {
+  id             Int          @id @default(autoincrement())
+  conversationId Int
+  userId         Int
+  joinedAt       DateTime     @default(now())
+  lastReadAt     DateTime?
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@unique([conversationId, userId])
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  conversationId Int
+  senderId       Int
+  content        String
+  messageType    String       @default("text")
+  metadata       String?
+  isEdited       Boolean      @default(false)
+  deletedAt      DateTime?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  sender         User         @relation("MessageSender", fields: [senderId], references: [id], onDelete: Cascade)
+}
+
+model Task {
+  id           Int       @id @default(autoincrement())
+  title        String
+  description  String?
+  status       String    @default("TODO")
+  action       String?
+  toolsActions String?
+  priority     String    @default("MEDIUM")
+  dueDate      DateTime?
+  tags         String?
+  userId       Int
+  deletedAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model Event {
+  id          Int       @id @default(autoincrement())
+  title       String
+  description String?
+  startDate   DateTime
+  endDate     DateTime
+  allDay      Boolean   @default(false)
+  location    String?
+  color       String    @default("blue")
+  attendees   String?
+  reminder    Int?
+  recurrence  String?
+  userId      Int
+  deletedAt   DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Todo {
+  id                Int       @id @default(autoincrement())
+  contactId         Int
+  customId          String?
+  taskName          String
+  demandeur         String?
+  generalReference  String?
+  detailedReference String?
+  codename          String?
+  accountType       String?
+  accountNumber     String?
+  tool              String?
+  actionType        String?
+  executionDate     DateTime?
+  result            String?
+  log               String?
+  status            String    @default("todo")
+  userId            Int
+  deletedAt         DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+}
+
+model Setting {
+  id        Int      @id @default(autoincrement())
+  key       String   @unique
+  value     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  status      String    @default("active")
+  budget      Float?
+  spent       Float     @default(0)
+  startDate   DateTime?
+  endDate     DateTime?
+  userId      Int
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  assets      Asset[]
+  invoices    Invoice[]
+  licenses    License[]
+  wallets     Wallet[]  @relation("ProjectWallets")
+  expenses    Expense[] @relation("ProjectExpenses")
+  user        User      @relation("ProjectOwner", fields: [userId], references: [id])
+}
+
+model License {
+  id           Int       @id @default(autoincrement())
+  name         String
+  softwareName String
+  licenseKey   String?
+  cost         Float
+  currency     String    @default("EUR")
+  status       String    @default("active")
+  startDate    DateTime
+  endDate      DateTime
+  renewalDate  DateTime?
+  notes        String?
+  projectId    Int?
+  userId       Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+  project      Project?  @relation(fields: [projectId], references: [id])
+  user         User      @relation("LicenseOwner", fields: [userId], references: [id])
+}
+
+model Asset {
+  id           Int       @id @default(autoincrement())
+  name         String
+  type         String
+  description  String?
+  purchaseDate DateTime
+  purchaseCost Float
+  currency     String    @default("EUR")
+  serialNumber String?
+  supplier     String?
+  warranty     DateTime?
+  status       String    @default("active")
+  notes        String?
+  projectId    Int?
+  userId       Int
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+  project      Project?  @relation(fields: [projectId], references: [id])
+  user         User      @relation("AssetOwner", fields: [userId], references: [id])
+}
+
+model Invoice {
+  id            Int       @id @default(autoincrement())
+  invoiceNumber String    @unique
+  clientName    String
+  description   String?
+  amount        Float
+  currency      String    @default("EUR")
+  status        String    @default("pending")
+  issueDate     DateTime  @default(now())
+  dueDate       DateTime?
+  paidDate      DateTime?
+  notes         String?
+  projectId     Int?
+  userId        Int
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  project       Project?  @relation(fields: [projectId], references: [id])
+  user          User      @relation("InvoiceOwner", fields: [userId], references: [id])
+}
+
+model Email {
+  id          Int               @id @default(autoincrement())
+  from        String
+  to          String
+  cc          String?
+  bcc         String?
+  subject     String
+  body        String
+  folder      String            @default("inbox")
+  isRead      Boolean           @default(false)
+  isStarred   Boolean           @default(false)
+  isImportant Boolean           @default(false)
+  sentAt      DateTime?
+  userId      Int
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+  deletedAt   DateTime?
+  user        User              @relation("UserEmails", fields: [userId], references: [id])
+  attachments EmailAttachment[]
+}
+
+model EmailAttachment {
+  id        Int      @id @default(autoincrement())
+  filename  String
+  filesize  Int
+  mimetype  String
+  url       String
+  emailId   Int
+  createdAt DateTime @default(now())
+  email     Email    @relation(fields: [emailId], references: [id], onDelete: Cascade)
+}
+
+model StorageFile {
+  id            Int       @id @default(autoincrement())
+  filename      String
+  originalName  String
+  filesize      Int
+  mimetype      String
+  path          String
+  url           String?
+  folder        String?
+  description   String?
+  isPublic      Boolean   @default(false)
+  isStarred     Boolean   @default(false)
+  tags          String?
+  shareToken    String?   @unique
+  downloadCount Int       @default(0)
+  userId        Int
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  user          User      @relation("UserFiles", fields: [userId], references: [id])
+}
+
+model SavedFilter {
+  id        Int      @id @default(autoincrement())
+  name      String
+  filters   String   @db.Text
+  userId    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation("UserSavedFilters", fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PageConfig {
+  id        Int      @id @default(autoincrement())
+  pageId    String   @unique
+  pageName  String
+  config    Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([pageId])
+}
+
+model Wallet {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  amount      Float
+  currency    String    @default("BTC")
+  projectId   Int?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  project     Project?  @relation("ProjectWallets", fields: [projectId], references: [id])
+  expenses    Expense[]
+
+  @@index([projectId])
+}
+
+model Currency {
+  id        Int      @id @default(autoincrement())
+  code      String   @unique
+  name      String
+  symbol    String
+  isDefault Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+enum ExpenseType {
+  MATERIAL
+  LICENSE
+  OTHER
+}
+
+model Expense {
+  id          Int         @id @default(autoincrement())
+  name        String
+  description String?
+  amount      Float
+  currency    String      @default("BTC")
+  type        ExpenseType
+  date        DateTime
+  projectId   Int
+  walletId    Int
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  project     Project     @relation("ProjectExpenses", fields: [projectId], references: [id])
+  wallet      Wallet      @relation(fields: [walletId], references: [id])
+
+  @@index([projectId])
+  @@index([walletId])
+}
