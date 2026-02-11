@@ -379,9 +379,21 @@ export default function TodoKanbanPage() {
                   >
                     <div className="flex items-start justify-between mb-2">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-slate-900 dark:text-white">
-                          {getCompositeId(todo)}
-                        </h3>
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <h3 className="font-semibold text-slate-900 dark:text-white">
+                            {getCompositeId(todo)}
+                          </h3>
+                          {todo.client?.nickname && (
+                            <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
+                              {todo.client.nickname}
+                            </span>
+                          )}
+                          {!todo.client?.nickname && todo.client?.firstName && (
+                            <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
+                              {todo.client.firstName}
+                            </span>
+                          )}
+                        </div>
                         <p className="text-sm text-slate-600 dark:text-slate-400">
                           {todo.taskName}
                         </p>
@@ -424,14 +436,14 @@ export default function TodoKanbanPage() {
                         )}
                         {todo.client?.priority && (
                           <span className={`px-2 py-1 rounded font-medium ${
-                            todo.client.priority === 'immediate' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400' :
-                            todo.client.priority === 'haute' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400' :
-                            todo.client.priority === 'moyenne' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400' :
+                            todo.client.priority.toLowerCase() === 'immédiate' || todo.client.priority.toLowerCase() === 'immediate' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400' :
+                            todo.client.priority.toLowerCase() === 'haute' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400' :
+                            todo.client.priority.toLowerCase() === 'moyenne' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400' :
                             'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400'
                           }`}>
-                            {todo.client.priority === 'immediate' ? '🔴 Immédiate' :
-                             todo.client.priority === 'haute' ? '🟠 Haute' :
-                             todo.client.priority === 'moyenne' ? '🟡 Moyenne' :
+                            {todo.client.priority.toLowerCase() === 'immédiate' || todo.client.priority.toLowerCase() === 'immediate' ? '🔴 Immédiate' :
+                             todo.client.priority.toLowerCase() === 'haute' ? '🟠 Haute' :
+                             todo.client.priority.toLowerCase() === 'moyenne' ? '🟡 Moyenne' :
                              '🔵 Faible'}
                           </span>
                         )}
@@ -478,7 +490,19 @@ export default function TodoKanbanPage() {
               <div className="grid grid-cols-2 gap-4 text-sm">
                 <div>
                   <span className="font-medium text-slate-700 dark:text-slate-300">Contact:</span>
-                  <p className="text-slate-900 dark:text-white">{selectedTodo.codename || `#${selectedTodo.contactId}`}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-slate-900 dark:text-white">{selectedTodo.codename || `#${selectedTodo.contactId}`}</p>
+                    {selectedTodo.client?.nickname && (
+                      <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
+                        {selectedTodo.client.nickname}
+                      </span>
+                    )}
+                    {!selectedTodo.client?.nickname && selectedTodo.client?.firstName && (
+                      <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
+                        {selectedTodo.client.firstName}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <span className="font-medium text-slate-700 dark:text-slate-300">Tâche:</span>
@@ -575,7 +599,19 @@ export default function TodoKanbanPage() {
               <div className="grid grid-cols-2 gap-3 text-sm">
                 <div>
                   <span className="font-medium text-slate-700 dark:text-slate-400">ID:</span>
-                  <p className="text-slate-900 dark:text-white">{getCompositeId(dropData.todo)}</p>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <p className="text-slate-900 dark:text-white">{getCompositeId(dropData.todo)}</p>
+                    {dropData.todo.client?.nickname && (
+                      <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
+                        {dropData.todo.client.nickname}
+                      </span>
+                    )}
+                    {!dropData.todo.client?.nickname && dropData.todo.client?.firstName && (
+                      <span className="text-xs px-2 py-1 bg-slate-100 dark:bg-slate-700 text-slate-700 dark:text-slate-300 rounded">
+                        {dropData.todo.client.firstName}
+                      </span>
+                    )}
+                  </div>
                 </div>
                 <div>
                   <span className="font-medium text-slate-700 dark:text-slate-400">Tâche:</span>
