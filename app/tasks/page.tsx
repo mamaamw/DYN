@@ -276,13 +276,15 @@ export default function TasksPage() {
       // Créer un TODO pour chaque combinaison outil/action
       for (const { tool, actionType } of toolsToCreate) {
         try {
-          await apiClient.post('/api/todos', {
+          await apiClient.post('/todos', {
             contactId: contact.id,
             customId: customId,
             taskName: selectedTask,
             demandeur: contact.newClient.requestor,
             generalReference: search?.generalReference,
             detailedReference: search?.detailedReference,
+            searchStartDate: search?.startDate,
+            searchEndDate: search?.endDate,
             codename: clientName,
             accountType: contact.accountType,
             accountNumber: contact.accountNumber,

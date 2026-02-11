@@ -272,6 +272,8 @@ model Todo {
   demandeur         String?
   generalReference  String?
   detailedReference String?
+  searchStartDate   DateTime?
+  searchEndDate     DateTime?
   codename          String?
   accountType       String?
   accountNumber     String?

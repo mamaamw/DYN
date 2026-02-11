@@ -36,7 +36,14 @@ export async function GET(
       );
     }
 
-    if (todo.userId !== payload.userId) {
+    // Vérifier si l'utilisateur est admin
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { role: true }
+    });
+
+    // Seul le propriétaire ou un admin peut voir
+    if (todo.userId !== payload.userId && user?.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Non autorisé' },
         { status: 403 }
@@ -89,7 +96,14 @@ export async function PATCH(
       );
     }
 
-    if (todo.userId !== payload.userId) {
+    // Vérifier si l'utilisateur est admin
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { role: true }
+    });
+
+    // Seul le propriétaire ou un admin peut modifier
+    if (todo.userId !== payload.userId && user?.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Non autorisé' },
         { status: 403 }
@@ -163,7 +177,14 @@ export async function DELETE(
       );
     }
 
-    if (todo.userId !== payload.userId) {
+    // Vérifier si l'utilisateur est admin
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { role: true }
+    });
+
+    // Seul le propriétaire ou un admin peut supprimer
+    if (todo.userId !== payload.userId && user?.role !== 'ADMIN') {
       return NextResponse.json(
         { error: 'Non autorisé' },
         { status: 403 }

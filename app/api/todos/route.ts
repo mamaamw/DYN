@@ -21,13 +21,23 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    // Vérifier si l'utilisateur est admin
+    const user = await prisma.user.findUnique({
+      where: { id: payload.userId },
+      select: { role: true }
+    });
+
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status');
 
     const where: any = {
-      userId: payload.userId,
       deletedAt: null
     };
+
+    // Si l'utilisateur n'est pas admin, filtrer par userId
+    if (user?.role !== 'ADMIN') {
+      where.userId = payload.userId;
+    }
 
     if (status) {
       where.status = status;
@@ -77,6 +87,8 @@ export async function POST(request: NextRequest) {
         demandeur: body.demandeur,
         generalReference: body.generalReference,
         detailedReference: body.detailedReference,
+        searchStartDate: body.searchStartDate,
+        searchEndDate: body.searchEndDate,
         codename: body.codename,
         accountType: body.accountType,
         accountNumber: body.accountNumber,

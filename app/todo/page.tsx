@@ -14,6 +14,8 @@ interface Todo {
   demandeur: string | null;
   generalReference: string | null;
   detailedReference: string | null;
+  searchStartDate: string | null;
+  searchEndDate: string | null;
   codename: string | null;
   accountType: string | null;
   accountNumber: string | null;
@@ -31,6 +33,7 @@ export default function TodoPage() {
   const [todos, setTodos] = useState<Todo[]>([]);
   const [filteredTodos, setFilteredTodos] = useState<Todo[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [statusFilter, setStatusFilter] = useState('ALL');
   const [showModal, setShowModal] = useState(false);
   const [selectedTodo, setSelectedTodo] = useState<Todo | null>(null);
@@ -42,6 +45,9 @@ export default function TodoPage() {
   const [editingStatusValue, setEditingStatusValue] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'grouped'>('grouped');
   const [showExportMenu, setShowExportMenu] = useState(false);
+  const [showToolExportModal, setShowToolExportModal] = useState(false);
+  const [selectedTools, setSelectedTools] = useState<string[]>([]);
+  const [exportMode, setExportMode] = useState<'single' | 'multiple'>('single');
   const [deleteConfirm, setDeleteConfirm] = useState<number | null>(null);
   const [formData, setFormData] = useState({
     executionDate: '',
@@ -59,14 +65,21 @@ export default function TodoPage() {
 
   const loadTodos = async () => {
     setLoading(true);
+    setError(null);
     try {
-      const res = await fetch('/api/todos');
-      if (res.ok) {
-        const data = await res.json();
-        setTodos(data.todos);
+      const res = await fetch('/api/todos', {
+        credentials: 'include'
+      });
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.error || `Erreur ${res.status}`);
       }
+      const data = await res.json();
+      setTodos(data.todos || []);
     } catch (error) {
       console.error('Erreur lors du chargement des todos:', error);
+      setError(error instanceof Error ? error.message : 'Erreur lors du chargement');
+      setTodos([]);
     } finally {
       setLoading(false);
     }
@@ -96,6 +109,7 @@ export default function TodoPage() {
     try {
       const res = await fetch(`/api/todos/${todoId}`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ [field]: value })
       });
@@ -162,6 +176,7 @@ export default function TodoPage() {
     try {
       const res = await fetch(`/api/todos/${selectedTodo.id}`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData)
       });
@@ -179,7 +194,8 @@ export default function TodoPage() {
   const handleDelete = async (id: number) => {
     try {
       const res = await fetch(`/api/todos/${id}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        credentials: 'include'
       });
 
       if (res.ok) {
@@ -212,6 +228,143 @@ export default function TodoPage() {
     return groups;
   };
 
+  // Obtenir tous les outils uniques
+  const getUniqueTools = () => {
+    const tools = new Set<string>();
+    todos.forEach(todo => {
+      if (todo.tool) {
+        tools.add(todo.tool);
+      }
+    });
+    return Array.from(tools).sort();
+  };
+
+  const handleExportByTool = () => {
+    setShowExportMenu(false);
+    setSelectedTools([]);
+    setExportMode('single');
+    setShowToolExportModal(true);
+  };
+
+  const confirmToolExport = async (format: ExportFormat) => {
+    if (selectedTools.length === 0) return;
+
+    if (exportMode === 'single') {
+      // Export dans un seul fichier Excel avec plusieurs feuilles
+      const workbook: any = {};
+      
+      selectedTools.forEach(tool => {
+        const toolTodos = filteredTodos.filter(todo => todo.tool === tool);
+        const cleanedData = prepareDataForExport(toolTodos, ['userId', 'deletedAt']);
+        workbook[tool] = cleanedData;
+      });
+
+      // Utiliser exportData avec des feuilles multiples
+      if (format === 'excel') {
+        exportData(workbook, format, 'todos-par-outil', { 
+          title: 'TODOs par outil',
+          multiSheet: true 
+        });
+      } else {
+        // Pour CSV, on exporte tout dans un seul fichier avec séparateurs
+        const allData: any[] = [];
+        selectedTools.forEach((tool, index) => {
+          const toolTodos = filteredTodos.filter(todo => todo.tool === tool);
+          
+          // Ajouter un en-tête
+          allData.push({
+            id: `=== ${tool} (${toolTodos.length} éléments) ===`,
+            taskName: '',
+            demandeur: '',
+            generalReference: '',
+            detailedReference: '',
+            searchStartDate: '',
+            searchEndDate: '',
+            codename: '',
+            accountType: '',
+            accountNumber: '',
+            tool: '',
+            actionType: '',
+            executionDate: '',
+            status: '',
+            log: '',
+            createdAt: '',
+            updatedAt: ''
+          });
+          
+          // Ajouter les todos
+          toolTodos.forEach(todo => {
+            const cleanedData = prepareDataForExport([todo], ['userId', 'deletedAt']);
+            allData.push(...cleanedData);
+          });
+          
+          // Ajouter une ligne vide entre les outils
+          if (index < selectedTools.length - 1) {
+            allData.push({
+              id: '',
+              taskName: '',
+              demandeur: '',
+              generalReference: '',
+              detailedReference: '',
+              searchStartDate: '',
+              searchEndDate: '',
+              codename: '',
+              accountType: '',
+              accountNumber: '',
+              tool: '',
+              actionType: '',
+              executionDate: '',
+              status: '',
+              log: '',
+              createdAt: '',
+              updatedAt: ''
+            });
+          }
+        });
+        
+        exportData(allData, format, 'todos-par-outil', { title: 'TODOs par outil' });
+      }
+    } else {
+      // Export dans des fichiers séparés avec délai pour éviter les blocages du navigateur
+      for (let i = 0; i < selectedTools.length; i++) {
+        const tool = selectedTools[i];
+        const toolTodos = filteredTodos.filter(todo => todo.tool === tool);
+        const cleanedData = prepareDataForExport(toolTodos, ['userId', 'deletedAt']);
+        
+        // Nettoyer le nom de l'outil pour le nom de fichier (retirer les caractères spéciaux)
+        const safeToolName = tool.replace(/[^a-zA-Z0-9-_]/g, '_');
+        
+        exportData(cleanedData, format, `todos-${safeToolName}`, { 
+          title: `TODOs - ${tool}` 
+        });
+        
+        // Attendre 300ms entre chaque téléchargement pour éviter les blocages
+        if (i < selectedTools.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 300));
+        }
+      }
+    }
+
+    setShowToolExportModal(false);
+    setSelectedTools([]);
+  };
+
+  const toggleToolSelection = (tool: string) => {
+    setSelectedTools(prev => 
+      prev.includes(tool) 
+        ? prev.filter(t => t !== tool)
+        : [...prev, tool]
+    );
+  };
+
+  const selectAllTools = () => {
+    setSelectedTools(getUniqueTools());
+  };
+
+  const deselectAllTools = () => {
+    setSelectedTools([]);
+  };
+
   const handleExportAll = (format: ExportFormat) => {
     const cleanedData = prepareDataForExport(filteredTodos, ['userId', 'deletedAt']);
     exportData(cleanedData, format, 'todos-complet', { title: 'Liste complète des TODOs' });
@@ -230,6 +383,8 @@ export default function TodoPage() {
         demandeur: '',
         generalReference: '',
         detailedReference: '',
+        searchStartDate: '',
+        searchEndDate: '',
         codename: '',
         accountType: '',
         accountNumber: '',
@@ -256,6 +411,8 @@ export default function TodoPage() {
           demandeur: '',
           generalReference: '',
           detailedReference: '',
+          searchStartDate: '',
+          searchEndDate: '',
           codename: '',
           accountType: '',
           accountNumber: '',
@@ -277,6 +434,9 @@ export default function TodoPage() {
   const getStatusBadge = (status: string) => {
     const styles = {
       todo: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400',
+      rejected: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400',
+      success: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400',
+      // Gardons la compatibilité avec les anciens statuts
       failed: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400',
       cooldown: 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400',
       'succes-court': 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-400',
@@ -284,6 +444,8 @@ export default function TodoPage() {
     };
     const labels = {
       todo: 'TODO',
+      rejected: 'REJECTED',
+      success: 'SUCCESS',
       failed: 'Failed',
       cooldown: 'Cooldown',
       'succes-court': 'Succès court',
@@ -386,12 +548,153 @@ export default function TodoPage() {
                       <p className="text-xs text-gray-500 dark:text-slate-400">Organisé par sections de tâches</p>
                     </div>
                   </button>
+
+                  <div className="px-4 py-2 text-xs font-medium text-gray-500 dark:text-slate-400 uppercase border-b border-gray-100 dark:border-slate-600 mt-2">
+                    Export par outil
+                  </div>
+                  
+                  <button
+                    onClick={handleExportByTool}
+                    className="w-full px-4 py-3 flex items-center gap-3 hover:bg-gray-50 dark:hover:bg-slate-700 transition-colors"
+                  >
+                    <FileText className="w-4 h-4 text-indigo-600" />
+                    <div className="text-left">
+                      <p className="text-sm font-medium text-gray-900 dark:text-slate-200">Sélectionner les outils</p>
+                      <p className="text-xs text-gray-500 dark:text-slate-400">Export personnalisé par outil</p>
+                    </div>
+                  </button>
                 </div>
               </div>
             </>
           )}
         </div>
       </div>
+
+      {/* Modal d'export par outil */}
+      {showToolExportModal && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-800 rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden">
+            <div className="p-6 border-b border-slate-200 dark:border-slate-700">
+              <h2 className="text-xl font-bold text-slate-900 dark:text-white">Export par outil</h2>
+              <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
+                Sélectionnez les outils à exporter
+              </p>
+            </div>
+
+            <div className="p-6 overflow-y-auto max-h-[60vh]">
+              {/* Mode d'export */}
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-2">
+                  Mode d'export
+                </label>
+                <div className="space-y-2">
+                  <label className="flex items-center gap-3 p-3 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700">
+                    <input
+                      type="radio"
+                      value="single"
+                      checked={exportMode === 'single'}
+                      onChange={(e) => setExportMode(e.target.value as 'single' | 'multiple')}
+                      className="w-4 h-4"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">Fichier unique avec feuilles multiples</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">Un fichier Excel avec une feuille par outil</p>
+                    </div>
+                  </label>
+                  <label className="flex items-center gap-3 p-3 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700">
+                    <input
+                      type="radio"
+                      value="multiple"
+                      checked={exportMode === 'multiple'}
+                      onChange={(e) => setExportMode(e.target.value as 'single' | 'multiple')}
+                      className="w-4 h-4"
+                    />
+                    <div>
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">Fichiers séparés</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">Un fichier distinct pour chaque outil</p>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              {/* Sélection des outils */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+                    Outils ({selectedTools.length} sélectionné(s))
+                  </label>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={selectAllTools}
+                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      Tout sélectionner
+                    </button>
+                    <button
+                      onClick={deselectAllTools}
+                      className="text-xs text-blue-600 dark:text-blue-400 hover:underline"
+                    >
+                      Tout désélectionner
+                    </button>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2 max-h-80 overflow-y-auto p-2 bg-slate-50 dark:bg-slate-900 rounded-lg">
+                  {getUniqueTools().map(tool => {
+                    const count = filteredTodos.filter(t => t.tool === tool).length;
+                    return (
+                      <label
+                        key={tool}
+                        className="flex items-center gap-2 p-3 border border-slate-300 dark:border-slate-600 rounded-lg cursor-pointer hover:bg-white dark:hover:bg-slate-800"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={selectedTools.includes(tool)}
+                          onChange={() => toggleToolSelection(tool)}
+                          className="w-4 h-4"
+                        />
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-slate-900 dark:text-white">{tool}</p>
+                          <p className="text-xs text-slate-600 dark:text-slate-400">{count} TODO(s)</p>
+                        </div>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+            </div>
+
+            <div className="p-6 border-t border-slate-200 dark:border-slate-700 flex justify-between gap-3">
+              <button
+                onClick={() => {
+                  setShowToolExportModal(false);
+                  setSelectedTools([]);
+                }}
+                className="px-4 py-2 bg-slate-200 dark:bg-slate-700 text-slate-900 dark:text-white rounded-lg hover:bg-slate-300 dark:hover:bg-slate-600"
+              >
+                Annuler
+              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => confirmToolExport('csv')}
+                  disabled={selectedTools.length === 0}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Exporter CSV
+                </button>
+                <button
+                  onClick={() => confirmToolExport('excel')}
+                  disabled={selectedTools.length === 0}
+                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:bg-slate-400 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <Download className="w-4 h-4" />
+                  Exporter Excel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Filters */}
       <div className="flex gap-4">
@@ -402,10 +705,12 @@ export default function TodoPage() {
         >
           <option value="ALL">Tous les statuts</option>
           <option value="todo">TODO</option>
-          <option value="failed">Failed</option>
-          <option value="cooldown">Cooldown</option>
-          <option value="succes-court">Succès court</option>
-          <option value="succes-long">Succès long</option>
+          <option value="rejected">REJECTED</option>
+          <option value="success">SUCCESS</option>
+          <option value="failed">Failed (ancien)</option>
+          <option value="cooldown">Cooldown (ancien)</option>
+          <option value="succes-court">Succès court (ancien)</option>
+          <option value="succes-long">Succès long (ancien)</option>
         </select>
         
         <select
@@ -450,9 +755,9 @@ export default function TodoPage() {
               <FileText className="w-6 h-6 text-red-600 dark:text-red-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Failed</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Rejected</p>
               <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                {todos.filter(t => t.status === 'failed').length}
+                {todos.filter(t => t.status === 'rejected' || t.status === 'failed').length}
               </p>
             </div>
           </div>
@@ -463,9 +768,9 @@ export default function TodoPage() {
               <CheckSquare className="w-6 h-6 text-green-600 dark:text-green-400" />
             </div>
             <div>
-              <p className="text-sm text-slate-600 dark:text-slate-400">Succès</p>
+              <p className="text-sm text-slate-600 dark:text-slate-400">Success</p>
               <p className="text-2xl font-bold text-slate-900 dark:text-white">
-                {todos.filter(t => t.status === 'succes-court' || t.status === 'succes-long').length}
+                {todos.filter(t => t.status === 'success' || t.status === 'succes-court' || t.status === 'succes-long').length}
               </p>
             </div>
           </div>
@@ -479,6 +784,26 @@ export default function TodoPage() {
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
           </div>
         </Card>
+      ) : error ? (
+        <Card>
+          <div className="flex flex-col items-center justify-center h-64 gap-4">
+            <div className="text-red-600 dark:text-red-400 text-6xl">⚠️</div>
+            <div className="text-center">
+              <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">
+                Erreur de chargement
+              </h3>
+              <p className="text-slate-600 dark:text-slate-400 mb-4">
+                {error}
+              </p>
+              <button
+                onClick={loadTodos}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors"
+              >
+                Réessayer
+              </button>
+            </div>
+          </div>
+        </Card>
       ) : viewMode === 'table' ? (
         /* Table View */
         <Card>
@@ -490,6 +815,9 @@ export default function TodoPage() {
                   <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Tâche</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Demandeur</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Réf. Générale</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Réf. Détaillée</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Date Début</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Date Fin</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Codename</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Type</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase">Account</th>
@@ -504,8 +832,20 @@ export default function TodoPage() {
               <tbody className="bg-white dark:bg-slate-900 divide-y divide-slate-200 dark:divide-slate-700">
                 {filteredTodos.length === 0 ? (
                   <tr>
-                    <td colSpan={13} className="px-6 py-8 text-center text-slate-500 dark:text-slate-400">
-                      Aucun TODO trouvé
+                    <td colSpan={16} className="px-6 py-12 text-center">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="text-slate-400 text-5xl">📋</div>
+                        <div>
+                          <p className="text-slate-900 dark:text-white font-semibold mb-1">
+                            {todos.length === 0 ? 'Aucun TODO créé' : 'Aucun TODO ne correspond aux filtres'}
+                          </p>
+                          <p className="text-slate-500 dark:text-slate-400 text-sm">
+                            {todos.length === 0 
+                              ? 'Les TODOs sont créés automatiquement lorsque vous validez des tâches dans la page Tasks'
+                              : 'Essayez de modifier les filtres pour voir plus de résultats'}
+                          </p>
+                        </div>
+                      </div>
                     </td>
                   </tr>
                 ) : (
@@ -522,6 +862,15 @@ export default function TodoPage() {
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-300">
                         {todo.generalReference || '-'}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-300">
+                        {todo.detailedReference || '-'}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-300">
+                        {todo.searchStartDate ? new Date(todo.searchStartDate).toLocaleDateString('fr-FR') : '-'}
+                      </td>
+                      <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-300">
+                        {todo.searchEndDate ? new Date(todo.searchEndDate).toLocaleDateString('fr-FR') : '-'}
                       </td>
                       <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-900 dark:text-slate-300">
                         {todo.codename || '-'}
@@ -591,10 +940,12 @@ export default function TodoPage() {
                               autoFocus
                             >
                               <option value="todo">TODO</option>
-                              <option value="failed">Failed</option>
-                              <option value="cooldown">Cooldown</option>
-                              <option value="succes-court">Succès court</option>
-                              <option value="succes-long">Succès long</option>
+                              <option value="rejected">REJECTED</option>
+                              <option value="success">SUCCESS</option>
+                              <option value="failed">Failed (ancien)</option>
+                              <option value="cooldown">Cooldown (ancien)</option>
+                              <option value="succes-court">Succès court (ancien)</option>
+                              <option value="succes-long">Succès long (ancien)</option>
                             </select>
                             <button
                               onClick={() => saveStatus(todo.id)}
@@ -797,10 +1148,12 @@ export default function TodoPage() {
                                 autoFocus
                               >
                                 <option value="todo">TODO</option>
-                                <option value="failed">Failed</option>
-                                <option value="cooldown">Cooldown</option>
-                                <option value="succes-court">Succès court</option>
-                                <option value="succes-long">Succès long</option>
+                                <option value="rejected">REJECTED</option>
+                                <option value="success">SUCCESS</option>
+                                <option value="failed">Failed (ancien)</option>
+                                <option value="cooldown">Cooldown (ancien)</option>
+                                <option value="succes-court">Succès court (ancien)</option>
+                                <option value="succes-long">Succès long (ancien)</option>
                               </select>
                               <button
                                 onClick={() => saveStatus(todo.id)}
@@ -932,10 +1285,12 @@ export default function TodoPage() {
                   className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-lg text-slate-900 dark:text-white"
                 >
                   <option value="todo">TODO</option>
-                  <option value="failed">Failed</option>
-                  <option value="cooldown">Cooldown</option>
-                  <option value="succes-court">Succès court</option>
-                  <option value="succes-long">Succès long</option>
+                  <option value="rejected">REJECTED</option>
+                  <option value="success">SUCCESS</option>
+                  <option value="failed">Failed (ancien)</option>
+                  <option value="cooldown">Cooldown (ancien)</option>
+                  <option value="succes-court">Succès court (ancien)</option>
+                  <option value="succes-long">Succès long (ancien)</option>
                 </select>
               </div>
 

@@ -130,8 +130,58 @@ export function toHTML(data: any[], filename: string = 'export', title: string =
 
 /**
  * Convertit les données en Excel (format XML compatible Excel)
+ * Supporte aussi les feuilles multiples si data est un objet { sheetName: data[] }
  */
-export function toExcel(data: any[], filename: string = 'export', sheetName: string = 'Données'): void {
+export function toExcel(
+  data: any[] | Record<string, any[]>, 
+  filename: string = 'export', 
+  sheetName: string = 'Données'
+): void {
+  // Si data est un objet, c'est un export multi-feuilles
+  if (!Array.isArray(data)) {
+    const workbookData = data as Record<string, any[]>;
+    const sheets = Object.keys(workbookData);
+    
+    if (sheets.length === 0) {
+      throw new Error('Aucune donnée à exporter');
+    }
+
+    // Créer un fichier Excel avec plusieurs feuilles en utilisant des séparateurs
+    let allContent = '';
+    
+    sheets.forEach((sheet, index) => {
+      const sheetData = workbookData[sheet];
+      if (!sheetData || sheetData.length === 0) return;
+      
+      const headers = Object.keys(sheetData[0]);
+      
+      // Ajouter le nom de la feuille comme en-tête
+      allContent += `\n=== ${sheet} ===\n`;
+      
+      // Ajouter les en-têtes
+      allContent += headers.join('\t') + '\n';
+      
+      // Ajouter les données
+      allContent += sheetData.map(row => 
+        headers.map(header => {
+          const value = row[header];
+          if (value === null || value === undefined) return '';
+          const stringValue = String(value);
+          return stringValue.replace(/\t/g, ' ').replace(/\n/g, ' ');
+        }).join('\t')
+      ).join('\n');
+      
+      // Ajouter une ligne vide entre les feuilles
+      if (index < sheets.length - 1) {
+        allContent += '\n\n';
+      }
+    });
+
+    downloadFile(allContent, `${filename}.xls`, 'application/vnd.ms-excel');
+    return;
+  }
+
+  // Export simple d'une seule feuille
   if (!data || data.length === 0) {
     throw new Error('Aucune donnée à exporter');
   }
@@ -172,28 +222,50 @@ function downloadFile(content: string, filename: string, mimeType: string): void
 
 /**
  * Exporte les données dans le format spécifié
+ * Supporte les exports multi-feuilles pour Excel quand multiSheet est true
  */
 export function exportData(
-  data: any[], 
+  data: any[] | Record<string, any[]>, 
   format: ExportFormat, 
   filename: string = 'export',
   options?: {
     title?: string;
     sheetName?: string;
+    multiSheet?: boolean;
   }
 ): void {
+  // Si c'est un export multi-feuilles mais pas en format Excel, convertir en simple tableau
+  if (options?.multiSheet && !Array.isArray(data) && format !== 'excel') {
+    console.warn('Export multi-feuilles uniquement supporté pour Excel. Fallback sur export simple.');
+    const workbookData = data as Record<string, any[]>;
+    const firstSheet = Object.keys(workbookData)[0];
+    data = workbookData[firstSheet] || [];
+  }
+
   switch (format) {
     case 'excel':
       toExcel(data, filename, options?.sheetName || 'Données');
       break;
     case 'csv':
-      toCSV(data, filename);
+      if (Array.isArray(data)) {
+        toCSV(data, filename);
+      } else {
+        console.error('CSV ne supporte pas les feuilles multiples');
+      }
       break;
     case 'json':
-      toJSON(data, filename);
+      if (Array.isArray(data)) {
+        toJSON(data, filename);
+      } else {
+        console.error('JSON ne supporte pas les feuilles multiples');
+      }
       break;
     case 'html':
-      toHTML(data, filename, options?.title || 'Export');
+      if (Array.isArray(data)) {
+        toHTML(data, filename, options?.title || 'Export');
+      } else {
+        console.error('HTML ne supporte pas les feuilles multiples');
+      }
       break;
     default:
       console.error('Format non supporté:', format);
