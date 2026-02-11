@@ -43,12 +43,32 @@ export async function GET(request: NextRequest) {
       where.status = status;
     }
 
-    const todos = await prisma.todo.findMany({
-      where,
-      orderBy: { createdAt: 'desc' }
-    });
+    try {
+      const todos = await prisma.todo.findMany({
+        where,
+        include: {
+          client: {
+            select: {
+              priority: true,
+              firstName: true,
+              nickname: true
+            }
+          }
+        },
+        orderBy: { createdAt: 'desc' }
+      });
 
-    return NextResponse.json({ todos });
+      return NextResponse.json({ todos });
+    } catch (dbError) {
+      console.error('Erreur Prisma lors du chargement des todos:', dbError);
+      // En cas d'erreur avec la relation, charger sans inclure le client
+      const todos = await prisma.todo.findMany({
+        where,
+        orderBy: { createdAt: 'desc' }
+      });
+
+      return NextResponse.json({ todos });
+    }
   } catch (error) {
     console.error('Erreur lors du chargement des todos:', error);
     return NextResponse.json(

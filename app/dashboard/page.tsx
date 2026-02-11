@@ -17,6 +17,7 @@ export default function DashboardPage() {
     todoStats: {
       total: 0,
       todo: 0,
+      in_progress: 0,
       failed: 0,
       succes: 0,
     },
@@ -77,21 +78,22 @@ export default function DashboardPage() {
       }
 
       // Charger les tâches
-      const todosRes = await apiClient.get<{ tasks: any[] }>('/tasks');
+      const todosRes = await apiClient.get<{ todos: any[] }>('/todos');
       if (todosRes.success && todosRes.data) {
-        const todos = todosRes.data.tasks || [];
+        const todos = todosRes.data.todos || [];
         setStats(prev => ({
           ...prev,
           todoStats: {
             total: todos.length,
             todo: todos.filter((t: any) => t.status === 'todo').length,
+            in_progress: todos.filter((t: any) => t.status === 'in_progress').length,
             failed: todos.filter((t: any) => t.status === 'failed').length,
-            succes: todos.filter((t: any) => t.status?.includes('succes')).length,
+            succes: todos.filter((t: any) => t.status === 'success').length,
           },
           todayTasks: todos.filter((t: any) => {
-            if (!t.dueDate) return false;
+            if (!t.executionDate) return false;
             const today = new Date().toDateString();
-            return new Date(t.dueDate).toDateString() === today;
+            return new Date(t.executionDate).toDateString() === today;
           }).length,
         }));
       }
@@ -233,7 +235,7 @@ export default function DashboardPage() {
           <CheckSquare className="w-5 h-5 text-gray-700" />
           <h3 className="text-lg font-semibold text-gray-900">État des Tâches</h3>
         </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
           <div className="text-center p-4 bg-gray-50 rounded-lg border border-gray-200">
             <p className="text-3xl font-bold text-gray-700">{stats.todoStats.total}</p>
             <p className="text-sm text-gray-600 mt-1">Total</p>
@@ -241,6 +243,10 @@ export default function DashboardPage() {
           <div className="text-center p-4 bg-blue-50 rounded-lg border border-blue-200">
             <p className="text-3xl font-bold text-blue-700">{stats.todoStats.todo}</p>
             <p className="text-sm text-blue-600 mt-1">À faire</p>
+          </div>
+          <div className="text-center p-4 bg-yellow-50 rounded-lg border border-yellow-200">
+            <p className="text-3xl font-bold text-yellow-700">{stats.todoStats.in_progress}</p>
+            <p className="text-sm text-yellow-600 mt-1">En cours</p>
           </div>
           <div className="text-center p-4 bg-red-50 rounded-lg border border-red-200">
             <p className="text-3xl font-bold text-red-700">{stats.todoStats.failed}</p>

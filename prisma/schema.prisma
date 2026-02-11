@@ -38,6 +38,7 @@ model NewClient {
   user               User?               @relation("UserNewClients", fields: [userId], references: [id])
   searches           SearchClient[]
   categories         NewClientCategory[]
+  todos              Todo[]              @relation("TodoClient")
 }
 
 model ContactIdentifier {
@@ -265,7 +266,7 @@ model Event {
 }
 
 model Todo {
-  id                Int       @id @default(autoincrement())
+  id                Int        @id @default(autoincrement())
   contactId         Int
   customId          String?
   taskName          String
@@ -282,11 +283,12 @@ model Todo {
   executionDate     DateTime?
   result            String?
   log               String?
-  status            String    @default("todo")
+  status            String     @default("todo")
   userId            Int
   deletedAt         DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
+  client            NewClient? @relation("TodoClient", fields: [contactId], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model Setting {

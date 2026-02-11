@@ -9,6 +9,7 @@ export interface DashboardStats {
   todoStats: {
     total: number;
     todo: number;
+    in_progress: number;
     failed: number;
     succes: number;
   };

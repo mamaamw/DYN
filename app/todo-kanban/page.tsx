@@ -27,6 +27,11 @@ interface Todo {
   userId: number;
   createdAt: string;
   updatedAt: string;
+  client?: {
+    priority: string;
+    firstName: string | null;
+    nickname: string | null;
+  };
 }
 
 export default function TodoKanbanPage() {
@@ -405,14 +410,29 @@ export default function TodoKanbanPage() {
                       </p>
                     )}
 
-                    {todo.tool && (
+                    {(todo.tool || todo.client?.priority) && (
                       <div className="flex gap-2 text-xs mb-2">
-                        <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 rounded">
-                          {todo.tool}
-                        </span>
+                        {todo.tool && (
+                          <span className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400 rounded">
+                            {todo.tool}
+                          </span>
+                        )}
                         {todo.actionType && (
                           <span className="px-2 py-1 bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-400 rounded">
                             {todo.actionType}
+                          </span>
+                        )}
+                        {todo.client?.priority && (
+                          <span className={`px-2 py-1 rounded font-medium ${
+                            todo.client.priority === 'immediate' ? 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-400' :
+                            todo.client.priority === 'haute' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-800 dark:text-orange-400' :
+                            todo.client.priority === 'moyenne' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-400' :
+                            'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-400'
+                          }`}>
+                            {todo.client.priority === 'immediate' ? '🔴 Immédiate' :
+                             todo.client.priority === 'haute' ? '🟠 Haute' :
+                             todo.client.priority === 'moyenne' ? '🟡 Moyenne' :
+                             '🔵 Faible'}
                           </span>
                         )}
                       </div>
@@ -428,6 +448,13 @@ export default function TodoKanbanPage() {
                       <div className="flex items-center gap-1 text-xs text-slate-600 dark:text-slate-400 mt-2">
                         <Calendar className="w-3 h-3" />
                         <span>{formatDate(todo.executionDate)}</span>
+                      </div>
+                    )}
+
+                    {todo.log && (
+                      <div className="mt-2 p-2 bg-slate-50 dark:bg-slate-800 rounded text-xs text-slate-700 dark:text-slate-300 border-l-2 border-blue-500">
+                        <div className="font-medium text-blue-600 dark:text-blue-400 mb-1">Log:</div>
+                        <div className="whitespace-pre-wrap">{todo.log}</div>
                       </div>
                     )}
 
