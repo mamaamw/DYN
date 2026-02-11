@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { GENERAL_REFERENCES } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
 import { AlertCircle, User } from 'lucide-react';
+import PhoneInput from '@/components/ui/PhoneInput';
 
 interface ContactIdentifier {
   accountNumber: string;
@@ -615,19 +616,28 @@ export default function NewClientPage() {
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                       Numéro / Compte
                     </label>
-                    <input
-                      type="text"
-                      value={contact.accountNumber}
-                      onChange={(e) => updateContact(i, 'accountNumber', e.target.value)}
-                      className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-transparent dark:text-white ${
-                        duplicateIndexes.has(i)
-                          ? 'border-red-500 dark:border-red-400 focus:ring-red-500'
-                          : warningIndexes.has(i)
-                          ? 'border-orange-500 dark:border-orange-400 focus:ring-orange-500'
-                          : 'border-gray-300 dark:border-[#1b2436] focus:ring-blue-500'
-                      }`}
-                      placeholder="+33 6 12 34 56 78"
-                    />
+                    {contact.accountType === 'Téléphone' || contact.accountType === 'WhatsApp' || contact.accountType === 'Telegram' || contact.accountType === 'Signal' ? (
+                      <PhoneInput
+                        value={contact.accountNumber}
+                        onChange={(value) => updateContact(i, 'accountNumber', value)}
+                        placeholder="+33 6 12 34 56 78"
+                        error={duplicateIndexes.has(i) || warningIndexes.has(i)}
+                      />
+                    ) : (
+                      <input
+                        type="text"
+                        value={contact.accountNumber}
+                        onChange={(e) => updateContact(i, 'accountNumber', e.target.value)}
+                        className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 dark:bg-transparent dark:text-white ${
+                          duplicateIndexes.has(i)
+                            ? 'border-red-500 dark:border-red-400 focus:ring-red-500'
+                            : warningIndexes.has(i)
+                            ? 'border-orange-500 dark:border-orange-400 focus:ring-orange-500'
+                            : 'border-gray-300 dark:border-[#1b2436] focus:ring-blue-500'
+                        }`}
+                        placeholder="@username ou ID"
+                      />
+                    )}
                   </div>
                   <div className="col-span-4">
                     <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

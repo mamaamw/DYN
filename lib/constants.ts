@@ -43,6 +43,58 @@ export const CURRENCY_SYMBOLS: Record<Currency, string> = {
   USD: '$',
 };
 
+export const CURRENCY_FLAGS: Record<Currency, string> = {
+  BTC: '🪙',
+  EUR: '🇪🇺',
+  USD: '🇺🇸',
+};
+
+// Constantes pour les pays (principaux)
+export const COUNTRY_FLAGS: Record<string, string> = {
+  FR: '🇫🇷',
+  BE: '🇧🇪',
+  CH: '🇨🇭',
+  LU: '🇱🇺',
+  CA: '🇨🇦',
+  DE: '🇩🇪',
+  GB: '🇬🇧',
+  US: '🇺🇸',
+  ES: '🇪🇸',
+  IT: '🇮🇹',
+  NL: '🇳🇱',
+  PT: '🇵🇹',
+  AT: '🇦🇹',
+  SE: '🇸🇪',
+  NO: '🇳🇴',
+  DK: '🇩🇰',
+  FI: '🇫🇮',
+  IE: '🇮🇪',
+  PL: '🇵🇱',
+  CZ: '🇨🇿',
+  GR: '🇬🇷',
+  RU: '🇷🇺',
+  TR: '🇹🇷',
+  JP: '🇯🇵',
+  CN: '🇨🇳',
+  KR: '🇰🇷',
+  IN: '🇮🇳',
+  AU: '🇦🇺',
+  NZ: '🇳🇿',
+  BR: '🇧🇷',
+  AR: '🇦🇷',
+  MX: '🇲🇽',
+  ZA: '🇿🇦',
+  SA: '🇸🇦',
+  AE: '🇦🇪',
+  IL: '🇮🇱',
+  EG: '🇪🇬',
+  MA: '🇲🇦',
+  TN: '🇹🇳',
+  DZ: '🇩🇿',
+  SN: '🇸🇳',
+  CI: '🇨🇮',
+};
+
 // Constantes pour les rôles
 export const USER_ROLES = {
   ADMIN: 'ADMIN',

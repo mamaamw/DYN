@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { ArrowLeft, Edit2, Calendar, User, Phone, AlertCircle, Clock, RefreshCw, Plus, History } from 'lucide-react';
+import { getCountryByDialCode } from '@/lib/countries';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 import { GENERAL_REFERENCES } from '@/lib/constants';
 
 interface ContactIdentifier {
@@ -320,27 +322,46 @@ export default function ClientDetailPage() {
                 <p className="text-gray-500 dark:text-gray-400 text-sm">Aucun contact enregistré</p>
               ) : (
                 <div className="space-y-3">
-                  {client.contactIdentifiers.map((contact) => (
-                    <div 
-                      key={contact.id} 
-                      className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-[#121a2d] rounded-lg"
-                    >
-                      <span className="text-2xl">{getContactIcon(contact.accountType)}</span>
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-medium text-gray-900 dark:text-white">
-                            {contact.accountNumber}
-                          </span>
-                          <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
-                            {contact.accountType}
-                          </span>
+                  {client.contactIdentifiers.map((contact) => {
+                    // Parser le numéro pour extraire le code du pays
+                    const match = contact.accountNumber.match(/^(\+\d+)\s*(.*)$/);
+                    const country = match ? getCountryByDialCode(match[1]) : null;
+                    
+                    return (
+                      <div 
+                        key={contact.id} 
+                        className="flex items-start gap-3 p-3 bg-gray-50 dark:bg-[#121a2d] rounded-lg"
+                      >
+                        <span className="text-2xl">{getContactIcon(contact.accountType)}</span>
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {country && (contact.accountType === 'Téléphone' || contact.accountType === 'WhatsApp' || contact.accountType === 'Telegram' || contact.accountType === 'Signal') && (
+                              <CountryFlag 
+                                emoji={country.flag}
+                                colors={country.flagColors}
+                                type={country.flagType}
+                                size="md"
+                              />
+                            )}
+                            <span className="font-medium text-gray-900 dark:text-white">
+                              {contact.accountNumber}
+                            </span>
+                            <span className="text-xs px-2 py-0.5 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded">
+                              {contact.accountType}
+                            </span>
+                            {country && (contact.accountType === 'Téléphone' || contact.accountType === 'WhatsApp' || contact.accountType === 'Telegram' || contact.accountType === 'Signal') && (
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
+                                {country.name}
+                              </span>
+                            )}
+                          </div>
+                          {contact.info && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{contact.info}</p>
+                          )}
                         </div>
-                        {contact.info && (
-                          <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">{contact.info}</p>
-                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

@@ -9,6 +9,8 @@ import { apiClient } from '@/lib/api-client';
 import { formatRelativeTime, getPriorityColor } from '@/lib/utils';
 import { useToast } from '@/hooks';
 import type { ApiResponse } from '@/types';
+import { getCountryByDialCode } from '@/lib/countries';
+import { CountryFlag } from '@/components/ui/CountryFlag';
 
 interface ContactIdentifier {
   id: number;
@@ -171,19 +173,34 @@ export default function ClientsPage() {
         return (
           <td key={columnKey} className="px-6 py-4">
             <div className="flex flex-wrap gap-1">
-              {client.contactIdentifiers.slice(0, 3).map((contact, i) => (
-                <span 
-                  key={i}
-                  className="inline-block px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded"
-                >
-                  {contact.accountType === 'Téléphone' && '📞'}
-                  {contact.accountType === 'WhatsApp' && '💬'}
-                  {contact.accountType === 'Telegram' && '✈️'}
-                  {contact.accountType === 'Signal' && '🔒'}
-                  {contact.accountType === 'Threema' && '🔐'}
-                  {' '}{contact.accountNumber}
-                </span>
-              ))}
+              {client.contactIdentifiers.slice(0, 3).map((contact, i) => {
+                const match = contact.accountNumber.match(/^(\+\d+)\s*(.*)$/);
+                const country = match ? getCountryByDialCode(match[1]) : null;
+                const isPhone = contact.accountType === 'Téléphone' || contact.accountType === 'WhatsApp' || contact.accountType === 'Telegram' || contact.accountType === 'Signal';
+                
+                return (
+                  <span 
+                    key={i}
+                    className="inline-flex items-center gap-1 px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 text-xs rounded"
+                  >
+                    {country && isPhone && (
+                      <CountryFlag 
+                        emoji={country.flag}
+                        colors={country.flagColors}
+                        type={country.flagType}
+                        size="sm"
+                        className="inline-block"
+                      />
+                    )}
+                    {!country && contact.accountType === 'Téléphone' && '📞'}
+                    {contact.accountType === 'WhatsApp' && '💬'}
+                    {contact.accountType === 'Telegram' && '✈️'}
+                    {contact.accountType === 'Signal' && '🔒'}
+                    {contact.accountType === 'Threema' && '🔐'}
+                    {' '}{contact.accountNumber}
+                  </span>
+                );
+              })}
               {client.contactIdentifiers.length > 3 && (
                 <span className="inline-block px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 text-xs rounded">
                   +{client.contactIdentifiers.length - 3}
