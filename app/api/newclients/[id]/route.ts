@@ -521,10 +521,15 @@ export async function DELETE(
           },
         });
 
-        // Marquer comme supprimé
+        // Modifier le slug pour libérer le nickname et marquer comme supprimé
+        const updateData: any = { deletedAt: new Date() };
+        if (client.slug) {
+          updateData.slug = `${client.slug}_deleted_${id}`;
+        }
+
         await tx.newClient.update({
           where: { id },
-          data: { deletedAt: new Date() },
+          data: updateData,
         });
       });
 

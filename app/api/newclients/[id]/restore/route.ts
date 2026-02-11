@@ -47,9 +47,29 @@ export async function PATCH(
     }
 
     // Restaurer le client en mettant deletedAt à null
+    const updateData: any = { deletedAt: null };
+    
+    // Restaurer le slug original si nécessaire
+    if (client.slug) {
+      const deletedSuffix = `_deleted_${clientId}`;
+      if (client.slug.endsWith(deletedSuffix)) {
+        const originalSlug = client.slug.slice(0, -deletedSuffix.length);
+        
+        // Vérifier si le slug original est disponible
+        const existingClient = await prisma.newClient.findUnique({
+          where: { slug: originalSlug }
+        });
+        
+        if (!existingClient) {
+          updateData.slug = originalSlug;
+        }
+        // Sinon, garder le slug actuel avec le suffixe
+      }
+    }
+    
     const restoredClient = await prisma.newClient.update({
       where: { id: clientId },
-      data: { deletedAt: null },
+      data: updateData,
     });
 
     // TODO: Enregistrer dans l'historique la restauration
